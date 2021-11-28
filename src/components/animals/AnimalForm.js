@@ -6,7 +6,7 @@ import { LocationContext } from "../location/LocationProvider";
 import { AnimalContext } from "./AnimalProvider";
 
 export const AnimalForm = () => {
-    const { addAnimal } = useContext(AnimalContext)
+    const { addAnimal, updateAnimal, getAnimalById } = useContext(AnimalContext)
     const { locations, getLocations } = useContext(LocationContext)
     const { customers, getCustomers } = useContext(CustomerContext)
 
@@ -21,7 +21,14 @@ export const AnimalForm = () => {
     const { animalId } = useParams()
 
     useEffect(() => {
-        getCustomers().then(getLocations)
+        getCustomers().then(getLocations).then(() => {
+            if (animalId) {
+                getAnimalById(animalId)
+                    .then(animal => {
+                        setAnimal(animal)
+                    })
+            }
+        })
     }, [])
 
     const handleControlledInputChange = (event) => {
@@ -39,30 +46,41 @@ export const AnimalForm = () => {
         if (locationId === 0 || customerId === 0) {
             window.alert("Please select a location and a customer")
         } else {
-            const newAnimal = {
-                name: animal.name,
-                breed: animal.breed,
-                locationId: locationId,
-                customerId: customerId
+            if (animalId) {
+                updateAnimal({
+                    id: parseInt(animalId),
+                    name: animal.name,
+                    breed: animal.breed,
+                    locationId: parseInt(animal.locationId),
+                    customerId: parseInt(animal.customerId)
+                })
+                    .then(() => history.push(`/animals/detail/${animal.id}`))
+            } else {
+                const newAnimal = {
+                    name: animal.name,
+                    breed: animal.breed,
+                    locationId: locationId,
+                    customerId: customerId
+                }
+                addAnimal(newAnimal)
+                    .then(() => history.push("/animals"))
             }
-            addAnimal(newAnimal)
-                .then(() => history.push("/animals"))
         }
     }
 
     return (
         <form className="animalForm">
-            <h2 className="animalForm__title">New Animal</h2>
+            <h2 className="animalForm__title">{animalId? <>Edit Animal </> : <>New Animal</>}</h2>
             <fieldset>
                 <div className="form-group">
                     <label htmlFor="name">Animal name:</label>
-                    <input type="text" id="name" required autoFocus className="form-control" placeholder="Animal name" value={animal.name} onChange={handleControlledInputChange} />
+                    <input type="text" id="name" required autoFocus className="form-control" placeholder="Animal name" value={animal.name} onChange={handleControlledInputChange} defaultValue= {animal.name}/>
                 </div>
             </fieldset>
             <fieldset>
                 <div className="form-group">
                     <label htmlFor="name">Animal breed:</label>
-                    <input type="text" id="breed" required autoFocus className="form-control" placeholder="Animal breed" value={animal.breed} onChange={handleControlledInputChange} />
+                    <input type="text" id="breed" required autoFocus className="form-control" placeholder="Animal breed" value={animal.breed} onChange={handleControlledInputChange} defaultValue= {animal.breed}/>
                 </div>
             </fieldset>
             <fieldset>
@@ -92,7 +110,7 @@ export const AnimalForm = () => {
                 </div>
             </fieldset>
             <button className="btn btn-primary" onClick={handleClickSaveAnimal}>
-                Save Animal
+                {animalId? <>Save Animal</> : <> Add Animal</>}
             </button>
         </form>
     )

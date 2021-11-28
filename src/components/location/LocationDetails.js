@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useParams } from "react-router"
+import { useHistory, useParams } from "react-router"
 import { useContext, useEffect } from "react/cjs/react.development"
 import { AnimalContext } from "../animals/AnimalProvider"
 import { EmployeeContext } from "../Employee/EmployeeProvider"
@@ -15,7 +15,7 @@ export const LocationDetails = () => {
     const [chosenlocationinfo, setchoselocationinfo] = useState({})
     const [chosenemployees, setchosenemployees] = useState([])
     const [chosenanimals, setchosenanimals] = useState([])
-
+    const history = useHistory()
 
     useEffect(()=>{
         getLocations().then(getEmployees).then(getAnimals).then(()=>{filteredArrays()})
@@ -49,6 +49,11 @@ export const LocationDetails = () => {
             {
                 chosenemployees.length > 0 ? chosenemployees.map(emp=><div>{emp.name}</div>) : "No Active Employees"
             }
-        </div></>
+        </div>
+        
+        <button onClick={() => {
+                history.push(`/locations/edit/${chosenlocationinfo.id}`)
+            }}>Edit location Info</button>
+            </>
     )
 } 
